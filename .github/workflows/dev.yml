@@ -57,7 +57,7 @@ jobs:
         shell: sh
         run: |
           tools/apictl/apictl import api \
-            -f dev/TrainStationApi/1.0.0/TrainStationApi-1.0.0 \
+            -f dev/TrainStationApi/1.0.0/TrainStationApi-1.0.0.zip \
             -e dev \
             --update \
             --preserve-provider=false \
