@@ -18,11 +18,6 @@ jobs:
           wget https://github.com/wso2/product-apim-tooling/releases/download/v4.5.0/apictl-4.5.0-linux-amd64.tar.gz
           tar -xzvf apictl-4.5.0-linux-amd64.tar.gz
           mv apictl tools/
-      - name: Download governance rules
-        run: |
-         mkdir -p rules
-         wget https://raw.githubusercontent.com/gogo-transit/train-api/rules/rules.yaml
-         mv rules.yaml rules/
       - name: Checkout API Code
         uses: actions/checkout@v3
         with:
@@ -43,6 +38,22 @@ jobs:
           git merge origin/base
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup API Controller Configurations
+        run: |
+          mkdir -p $HOME/.wso2apictl
+          echo "$CTL_CONFIG" | sed 's/, /\n  /g' >> $HOME/.wso2apictl/main_config.yaml
+          cat $HOME/.wso2apictl/main_config.yaml
+          mkdir -p $HOME/.wso2apictl.local
+          echo "$CTL_KEYS" | sed 's/, /\n  /g' >> $HOME/.wso2apictl.local/keys.json
+        if: github.event_name == 'pull_request_target' && github.event.action == 'closed' && github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
+        env:
+          CTL_CONFIG: ${{ secrets.CTL_CONFIG }}
+          CTL_KEYS: ${{ secrets.CTL_KEYS }}
+      - name: Login to Dev Environment
+        shell: sh
+        run: |
+          tools/apictl/apictl login dev -u ${{ secrets.DEV_USERNAME }} -p ${{ secrets.DEV_PASSWORD }} --insecure
+        if: github.event_name == 'pull_request_target' && github.event.action == 'closed' && github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
 
       - name: Run Governance Validation
         run: |
