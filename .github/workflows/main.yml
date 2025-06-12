@@ -15,11 +15,8 @@ jobs:
       - name: install WSO2 tools
         run: |
           mkdir -p tools
-          wget https://github.com/gogo-transit/cicd/releases/download/v1/api_governance_cli_tool.zip
-          unzip api_governance_cli_tool.zip
-          wget https://github.com/wso2/product-apim-tooling/releases/download/v4.3.0/apictl-4.3.0-linux-amd64.tar.gz
-          tar -xzvf apictl-4.3.0-linux-amd64.tar.gz
-          mv api_governance_cli_tool tools
+          wget https://github.com/wso2/product-apim-tooling/releases/download/v4.5.0/apictl-4.5.0-linux-amd64.tar.gz
+          tar -xzvf apictl-4.5.0-linux-amd64.tar.gz
           mv apictl tools/
       - name: Download governance rules
         run: |
@@ -46,10 +43,22 @@ jobs:
           git merge origin/base
         env:
           GITHUB_TOKEN: ${{ secrets.BOT_TOKEN }}
-      - name: Run governance Validation
+
+      - name: Run Governance Validation
         run: |
-          tools/api_governance_cli_tool/api-governance-cli-tool-linux validate --config "tools/api_governance_cli_tool/config.yaml" --ruleset "rules/rules.yaml" --directory "base/TrainStationApi/1.0.0/TrainStationApi-1.0.0" --verbose >> result.txt
-      - name: Update Results
+          tools/apictl/apictl import api -f "base/TrainStationApi/1.0.0/TrainStationApi-1.0.0" -e dev 
+          --dry-run --insecure > result.txt || true
+
+      - name: Fail on Governance ERRORs only
+        run: |
+          if grep -qE '\|.*\|\s*ERROR\s*\|' result.txt; then
+            echo "::error ::Governance errors found. PR cannot be merged."
+            exit 1
+          else
+            echo "No ERROR-level governance issues. Proceeding..."
+          fi
+
+      - name: Post Governance Report as PR Comment
         shell: sh
         if: github.event_name == 'pull_request_target' && always()
         run: |
