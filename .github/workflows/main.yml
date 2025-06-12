@@ -49,7 +49,6 @@ jobs:
           cat $HOME/.wso2apictl/main_config.yaml
           mkdir -p $HOME/.wso2apictl.local
           echo "$CTL_KEYS" | sed 's/, /\n  /g' >> $HOME/.wso2apictl.local/keys.json
-        if: github.event_name == 'pull_request_target' && github.event.action == 'closed' && github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
         env:
           CTL_CONFIG: ${{ secrets.CTL_CONFIG }}
           CTL_KEYS: ${{ secrets.CTL_KEYS }}
@@ -58,8 +57,7 @@ jobs:
         shell: sh
         run: |
           tools/apictl/apictl login dev -u ${{ secrets.DEV_USERNAME }} -p ${{ secrets.DEV_PASSWORD }} --insecure
-        if: github.event_name == 'pull_request_target' && github.event.action == 'closed' && github.event.pull_request.merged == true || github.event_name == 'workflow_dispatch'
-
+          
       - name: Run Governance Validation
         run: |
           tools/apictl/apictl import api -f "base/TrainStationApi/1.0.0/TrainStationApi-1.0.0" -e dev 
