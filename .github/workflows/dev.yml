@@ -9,8 +9,8 @@ jobs:
       - name: Download APICTL
         run: |
           mkdir -p tools
-          wget https://github.com/wso2/product-apim-tooling/releases/download/v4.3.0/apictl-4.3.0-linux-amd64.tar.gz
-          tar -xzvf apictl-4.3.0-linux-amd64.tar.gz
+          wget https://github.com/wso2/product-apim-tooling/releases/download/v4.5.0/apictl-4.5.0-linux-amd64.tar.gz
+          tar -xzvf apictl-4.5.0-linux-amd64.tar.gz
           mv apictl tools/
       - name: Setup Hosts
         run: sudo echo "${HOST_ENTRY}" | sudo tee -a /etc/hosts
